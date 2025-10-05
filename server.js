@@ -1,6 +1,10 @@
 import express from "express";
 import dotenv from "dotenv";
-import authRoutes from "./routes/authRoutes.js"; // Make sure these imports are correct
+import mongoose from "mongoose";
+import cors from "cors"; // Add this
+
+// ✅ FIXED IMPORTS
+import authRoutes from "./routes/authRoutes.js";
 import ticketRoutes from "./routes/ticketRoutes.js";
 import commentRoutes from "./routes/commentRoutes.js";
 
@@ -8,55 +12,35 @@ dotenv.config();
 
 const app = express();
 
-// Add this - Express needs to parse JSON bodies
-app.use(express.json()); // Parse JSON bodies
-app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-const allowedOrigins = [
-  "https://vercel-help-desk-frontend.vercel.app",
-  "http://localhost:5173",
-];
+// CORS - Simplified
+app.use(
+  cors({
+    origin: [
+      "https://vercel-help-desk-frontend.vercel.app",
+      "http://localhost:5173",
+    ],
+    credentials: true,
+  })
+);
 
-// CORS middleware - FIXED VERSION
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
+// MongoDB connection
+mongoose
+  .connect(process.env.MONGODB_URI || "mongodb://localhost:27017/helpdesk")
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch((err) => console.error("❌ MongoDB Error:", err));
 
-  // Handle preflight requests first
-  if (req.method === "OPTIONS") {
-    if (allowedOrigins.includes(origin)) {
-      res.setHeader("Access-Control-Allow-Origin", origin);
-      res.setHeader(
-        "Access-Control-Allow-Methods",
-        "GET, POST, PUT, DELETE, OPTIONS, PATCH"
-      );
-      res.setHeader(
-        "Access-Control-Allow-Headers",
-        "Content-Type, Authorization, X-Requested-With, Accept, X-CSRF-Token, X-Api-Version"
-      );
-      res.setHeader("Access-Control-Allow-Credentials", "true");
-      res.setHeader("Access-Control-Max-Age", "86400"); // 24 hours
-    }
-    return res.sendStatus(204);
-  }
-
-  // Handle actual requests
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-    res.setHeader("Access-Control-Allow-Credentials", "true");
-  }
-
-  next();
-});
-
-// Your routes
+// Routes
 app.use("/auth", authRoutes);
 app.use("/tickets", ticketRoutes);
-app.use("/tickets", commentRoutes);
+app.use("/comments", commentRoutes);
 
-// Health check route
+// Health check
 app.get("/", (req, res) => {
   res.json({ message: "API is running!" });
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+export default app;
