@@ -49,9 +49,9 @@ app.use((req, res, next) => {
 });
 
 // Your routes
-app.use("/api/auth", authRoutes);
-app.use("/api/tickets", ticketRoutes);
-app.use("/api/tickets", commentRoutes);
+app.use("/auth", authRoutes);
+app.use("/tickets", ticketRoutes);
+app.use("/tickets", commentRoutes);
 
 // Health check route
 app.get("/", (req, res) => {
