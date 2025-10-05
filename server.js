@@ -33,6 +33,20 @@ mongoose
   .then(() => console.log("✅ MongoDB Connected"))
   .catch((err) => console.error("❌ MongoDB Error:", err));
 
+
+
+// Add this route before your other routes
+app.get("/debug", (req, res) => {
+  res.json({
+    message: "Debug info",
+    mongodbConnected: mongoose.connection.readyState === 1,
+    readyState: mongoose.connection.readyState,
+    hasMongoDBUri: !!process.env.MONGODB_URI,
+    hasJwtSecret: !!process.env.JWT_SECRET,
+    nodeEnv: process.env.NODE_ENV
+  });
+});
+
 // Routes
 app.use("/auth", authRoutes);
 app.use("/tickets", ticketRoutes);
