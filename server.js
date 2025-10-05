@@ -9,7 +9,8 @@ dotenv.config();
 const app = express();
 
 // Add this - Express needs to parse JSON bodies
-app.use(express.json());
+app.use(express.json()); // Parse JSON bodies
+app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 
 const allowedOrigins = [
   "https://vercel-help-desk-frontend.vercel.app",
